@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Stadium Crowd Navigation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script type="module" src="firebase-config.js"></script>
+    <script type="module" src="app.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>Stadium Navigation Assistant</h1>
+            <p>Real-time crowd heatmaps and smart routing</p>
+        </header>
+
+        <main>
+            <div class="map-container">
+                <!-- Premium Glowing SVG Stadium Map -->
+                <svg viewBox="0 0 1000 700" class="stadium-map" id="stadium-svg">
+                    <defs>
+                        <!-- Glowing gradients and filters -->
+                        <radialGradient id="pitchGlow" cx="50%" cy="50%" r="50%">
+                            <stop offset="0%" stop-color="#00e5ff" stop-opacity="0.15" />
+                            <stop offset="100%" stop-color="#00e5ff" stop-opacity="0" />
+                        </radialGradient>
+                        <linearGradient id="standsGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#141420" />
+                            <stop offset="100%" stop-color="#2a2a40" />
+                        </linearGradient>
+                        <filter id="neonGlow" x="-20%" y="-20%" width="140%" height="140%">
+                            <feGaussianBlur stdDeviation="6" result="blur" />
+                            <feMerge>
+                                <feMergeNode in="blur" />
+                                <feMergeNode in="SourceGraphic" />
+                            </feMerge>
+                        </filter>
+                    </defs>
+
+                    <!-- Outer Ground -->
+                    <rect width="1000" height="700" fill="transparent" rx="30"/>
+                    
+                    <!-- Ambient Glow behind the Stadium -->
+                    <ellipse cx="500" cy="350" rx="350" ry="250" fill="url(#pitchGlow)" />
+
+                    <!-- Stadium Outer Stands -->
+                    <ellipse cx="500" cy="350" rx="400" ry="260" fill="url(#standsGrad)" stroke="#3f3f5a" stroke-width="6"/>
+                    <ellipse cx="500" cy="350" rx="380" ry="240" fill="none" stroke="#2a2a40" stroke-width="4"/>
+                    <ellipse cx="500" cy="350" rx="360" ry="220" fill="none" stroke="#2a2a40" stroke-width="4"/>
+
+                    <!-- Pitch / Field -->
+                    <rect x="250" y="150" width="500" height="400" fill="#0b1319" stroke="#00e5ff" stroke-width="4" rx="15" filter="url(#neonGlow)"/>
+                    
+                    <!-- Field Markings -->
+                    <line x1="500" y1="150" x2="500" y2="550" stroke="#00e5ff" stroke-width="2" opacity="0.5"/>
+                    <circle cx="500" cy="350" r="60" fill="none" stroke="#00e5ff" stroke-width="2" opacity="0.5"/>
+                    <circle cx="500" cy="350" r="4" fill="#00e5ff" opacity="0.7"/>
+                    
+                    <!-- Penalty Areas -->
+                    <rect x="250" y="250" width="80" height="200" fill="none" stroke="#00e5ff" stroke-width="2" opacity="0.5"/>
+                    <rect x="670" y="250" width="80" height="200" fill="none" stroke="#00e5ff" stroke-width="2" opacity="0.5"/>
+                    <path d="M 330 300 Q 370 350 330 400" fill="none" stroke="#00e5ff" stroke-width="2" opacity="0.5"/>
+                    <path d="M 670 300 Q 630 350 670 400" fill="none" stroke="#00e5ff" stroke-width="2" opacity="0.5"/>
+
+                    <!-- Stadium Image Overlay -->
+                    <image href="stadium_map.png" x="0" y="0" width="1000" height="700" opacity="0.6" preserveAspectRatio="xMidYMid slice" />
+
+                    <!-- Connecting Walkways (Logical Paths) -->
+                    <g id="walkways" stroke="#3f3f5a" stroke-width="8" stroke-dasharray="10 5" fill="none" opacity="0.4">
+                        <path d="M 500 180 L 500 120 L 500 60" /> <!-- North Stand to North Gate -->
+                        <path d="M 500 180 L 720 180 L 720 150" /> <!-- North Stand to East Food -->
+                        <path d="M 500 180 L 280 180 L 280 550" /> <!-- North Stand to West Food (via concourse) -->
+                        <path d="M 500 180 L 800 180 L 900 350" /> <!-- North Stand to East Gate -->
+                        <path d="M 500 180 L 200 180 L 100 350" /> <!-- North Stand to West Gate -->
+                        <path d="M 500 180 L 800 180 L 800 500 L 500 640" /> <!-- North Stand to South Gate -->
+                    </g>
+
+                    <!-- Nodes -->
+                    <!-- North Gate -->
+                    <circle id="map-gate_north" cx="500" cy="60" r="35" class="zone-node" />
+                    <text x="500" y="20" text-anchor="middle" fill="#fff" font-size="16" font-weight="600">North Gate</text>
+                    <!-- South Gate -->
+                    <circle id="map-gate_south" cx="500" cy="640" r="35" class="zone-node" />
+                    <text x="500" y="695" text-anchor="middle" fill="#fff" font-size="16" font-weight="600">South Gate</text>
+                    <!-- East Gate -->
+                    <circle id="map-gate_east" cx="900" cy="350" r="35" class="zone-node" />
+                    <text x="965" y="355" text-anchor="middle" fill="#fff" font-size="16" font-weight="600">East Gate</text>
+                    <!-- West Gate -->
+                    <circle id="map-gate_west" cx="100" cy="350" r="35" class="zone-node" />
+                    <text x="35" y="355" text-anchor="middle" fill="#fff" font-size="16" font-weight="600">West Gate</text>
+                    
+                    <!-- East Food -->
+                    <circle id="map-food_east" cx="720" cy="150" r="30" class="zone-node" />
+                    <text x="720" y="110" text-anchor="middle" fill="#fff" font-size="14" font-weight="600">East Food</text>
+                    <!-- West Food -->
+                    <circle id="map-food_west" cx="280" cy="550" r="30" class="zone-node" />
+                    <text x="280" y="605" text-anchor="middle" fill="#fff" font-size="14" font-weight="600">West Food</text>
+                    
+                    <!-- Routing Line Vector -->
+                    <path id="route-line" d="" fill="none" stroke="#00e5ff" stroke-width="6" stroke-linejoin="round" class="hidden-route" filter="url(#neonGlow)"/>
+                    <circle id="route-pulse" cx="0" cy="0" r="10" fill="#fff" filter="url(#neonGlow)" class="hidden-route drop-glow" />
+
+                    <!-- User Location Tracker (Fixed in North Stand) -->
+                    <circle id="user-location" cx="500" cy="180" r="12" fill="#fff" filter="url(#neonGlow)">
+                        <animate attributeName="r" values="10; 18; 10" dur="2s" repeatCount="indefinite"/>
+                        <animate attributeName="opacity" values="1; 0.5; 1" dur="2s" repeatCount="indefinite"/>
+                    </circle>
+                    <text x="500" y="215" text-anchor="middle" fill="#fff" font-size="14" font-weight="800">NORTH STAND (YOU)</text>
+                </svg>
+            </div>
+
+            <div class="info-panel">
+                <div class="panel-card recommendation-card">
+                    <h2>Smart Route Planner</h2>
+                    <div class="recommendation-item">
+                        <p>Best Entry: <strong id="best-gate-name">Scanning...</strong></p>
+                        <button id="route-gate-btn" class="action-btn" disabled>Route to Gate</button>
+                    </div>
+                    <div class="recommendation-item" style="margin-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1.5rem;">
+                        <p>Best Food: <strong id="best-food-name">Scanning...</strong></p>
+                        <button id="route-food-btn" class="action-btn" disabled>Route to Food</button>
+                    </div>
+                </div>
+
+                <div class="panel-card status-card">
+                    <h2>Live Zone Densities</h2>
+                    <div id="loading-spinner" class="spinner"></div>
+                    <ul id="zone-list">
+                        <!-- Instantiated by Javascript -->
+                    </ul>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>
