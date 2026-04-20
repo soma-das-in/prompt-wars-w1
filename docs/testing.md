@@ -29,5 +29,15 @@ The web interface was tested manually to confirm:
 - Gate recommendation display
 - Real-time updates
 
+## Automated Logic Testing
+The system includes automated unit tests to verify core algorithms:
+- **Backend Categorization**: Validates that crowd density percentages map correctly to Low/Medium/High status.
+- **Routing Algorithms**: Verifies the least-congested gate and food court logic.
+- **Edge Case Handling**: Ensures stability with empty or malformed data.
+
+Run these tests using:
+`python3 tests/test_logic.py`
+
 ## Cost-Aware Testing
 Testing was performed with limited simulation frequency to ensure the system remains 
+within the hackathon budget.

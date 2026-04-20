@@ -111,26 +111,23 @@ Hosts the containerized frontend web application, scaling to zero when not in us
 
 # Repository Structure
 ```
-smart-stadium-navigation
-│
+/prompt-wars-w1
 ├── frontend
-│ ├── Dockerfile
-│ ├── nginx.conf
-│ ├── index.html
-│ ├── app.js
-│ ├── heatmap.js
-│ ├── firebase-config.js
-│ └── styles.css
-│
+│   ├── Dockerfile
+│   ├── nginx.conf
+│   ├── index.html
+│   ├── app.js
+│   ├── heatmap.js
+│   └── styles.css
 ├── cloud_functions
-│ ├── crowd_simulation.py
-│ └── requirements.txt
-│
+│   ├── main.py
+│   └── requirements.txt
 ├── docs
-│ ├── architecture.md
-│ ├── firestore_schema.md
-│ └── user_flow.md
-│
+│   ├── architecture.md
+│   ├── testing.md
+│   └── user_flow.md
+├── tests
+│   └── test_logic.py # Automated Logic Verification
 ├── README.md
 └── .gitignore
 ```
@@ -163,6 +160,10 @@ Deploy:
 
 Build the Docker image and deploy to Cloud Run, or open locally:
 `frontend/index.html`
+
+### 5. Run Automated Tests
+Verify core system logic:
+`python3 tests/test_logic.py`
 
 ---
 
